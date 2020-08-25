@@ -1,0 +1,28 @@
+--cpu Cortex-M7.fp.dp
+"lab_2_2\startup_stm32f767xx.o"
+"lab_2_2\main.o"
+"lab_2_2\gpio.o"
+"lab_2_2\sys.o"
+"lab_2_2\stm32f7xx_it.o"
+"lab_2_2\stm32f7xx_hal_msp.o"
+"lab_2_2\stm32f7xx_hal_cortex.o"
+"lab_2_2\stm32f7xx_hal_tim.o"
+"lab_2_2\stm32f7xx_hal_tim_ex.o"
+"lab_2_2\stm32f7xx_hal_rcc.o"
+"lab_2_2\stm32f7xx_hal_rcc_ex.o"
+"lab_2_2\stm32f7xx_hal_flash.o"
+"lab_2_2\stm32f7xx_hal_flash_ex.o"
+"lab_2_2\stm32f7xx_hal_gpio.o"
+"lab_2_2\stm32f7xx_hal_dma.o"
+"lab_2_2\stm32f7xx_hal_dma_ex.o"
+"lab_2_2\stm32f7xx_hal_pwr.o"
+"lab_2_2\stm32f7xx_hal_pwr_ex.o"
+"lab_2_2\stm32f7xx_hal.o"
+"lab_2_2\stm32f7xx_hal_i2c.o"
+"lab_2_2\stm32f7xx_hal_i2c_ex.o"
+"lab_2_2\stm32f7xx_hal_exti.o"
+"lab_2_2\system_stm32f7xx.o"
+--library_type=microlib --strict --scatter "lab_2_2\lab_2_2.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "lab_2_2.map" -o lab_2_2\lab_2_2.axf
