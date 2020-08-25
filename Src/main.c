@@ -158,46 +158,6 @@ int main(void)
 			
 		#endif
 		
-		/*
-		Lab 2_2
-		if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_13)==GPIO_PIN_SET){
-			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET);
-			HAL_Delay(1000);
-		  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_RESET);
-		}*/
-		
-		/*
-		if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==GPIO_PIN_RESET){
-			HAL_GPIO_WritePin(GPIOC,GPIO_PIN_8,GPIO_PIN_SET);
-			ledState = ((GPIOC->ODR)>>8)&0x01;
-			HAL_Delay(1000);
-		  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_8,GPIO_PIN_RESET);
-		}ledState = ((GPIOC->ODR)>>8)&0x01;
-		*/
-		/*
-		if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_13)==GPIO_PIN_SET){
-			
-			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET);
-			HAL_Delay(1000);
-		  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_RESET);
-			for(int count = 0 ; count < 7 ; count++){
-				if(count ==0 ){
-				ledMove =0;
-				}else if(count ==1){
-				ledMove =1;
-				}else{
-				ledMove = ledMove<<1;
-				}
-				//uint16_t d_7 = ledMove & 0x01;
-				
-				GPIOG->ODR |= ledMove & 0xc0;
-			  GPIOF->ODR |= ledMove & 0x29;
-			  GPIOE->ODR |= ledMove & 0x16;
-				
-				HAL_Delay(500);
-			}
-		}*/
-	
 		
   }
   /* USER CODE END 3 */
