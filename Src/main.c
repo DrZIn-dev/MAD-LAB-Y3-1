@@ -62,7 +62,7 @@ uint16_t shift = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void bitConvert(uint32_t);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -137,24 +137,31 @@ int main(void)
 		}
 		#elif LAB == 24
 			if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==GPIO_PIN_RESET){
-				ledTemp = initLed << ledTemp;
+				ledTemp = initLed << shift;
+
+				bitConvert(ledTemp);
+				
+				shift++;
+				if(shift > 7)
+					shift = 0;
+				
+				HAL_Delay(300);
 			}
 			if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_13)==GPIO_PIN_SET){
 				for(int count = 7 ; count >= 0 ; count--){
 					ledTemp = initLed << count;
-					for(int index = 0 ; index <= 7 ; index++){
-						bitNum[index] = (ledTemp >> index) & 0x01;
-					}
-					GPIOG->ODR = ~(bitNum[7] <<9 | bitNum[6] << 14);
-					GPIOF->ODR =~(bitNum[5] <<15 | bitNum[3] <<14 | bitNum[0] <<13);
-					GPIOE->ODR = ~(bitNum[4]<<13 | bitNum[2] << 11 | bitNum[1] <<9);
-					HAL_Delay(500);
+					
+					bitConvert(ledTemp);
+					
+				  HAL_Delay(500);
 				}
 				// Close Alll Led
 				  GPIOG->ODR = 0xFFFFFFFF;
 	        GPIOF->ODR = 0xFFFFFFFF;
 	        GPIOE->ODR = 0xFFFFFFFF;
 			}
+			
+					
 			
 		#endif
 		
@@ -213,7 +220,14 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void bitConvert(uint32_t ledTemp){
+		for(int index = 0 ; index <= 7 ; index++){
+			bitNum[index] = (ledTemp >> index) & 0x01;
+		}
+		GPIOG->ODR = ~(bitNum[7] <<9 | bitNum[6] << 14);
+		GPIOF->ODR =~(bitNum[5] <<15 | bitNum[3] <<14 | bitNum[0] <<13);
+		GPIOE->ODR = ~(bitNum[4]<<13 | bitNum[2] << 11 | bitNum[1] <<9); 
+}
 /* USER CODE END 4 */
 
 /**
