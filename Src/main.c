@@ -220,6 +220,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+#if LAB == 24
 void bitConvert(uint32_t ledTemp){
 		for(int index = 0 ; index <= 7 ; index++){
 			bitNum[index] = (ledTemp >> index) & 0x01;
@@ -228,6 +229,7 @@ void bitConvert(uint32_t ledTemp){
 		GPIOF->ODR =~(bitNum[5] <<15 | bitNum[3] <<14 | bitNum[0] <<13);
 		GPIOE->ODR = ~(bitNum[4]<<13 | bitNum[2] << 11 | bitNum[1] <<9); 
 }
+#endif
 /* USER CODE END 4 */
 
 /**
