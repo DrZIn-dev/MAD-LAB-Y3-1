@@ -20,11 +20,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,7 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define LAB 24
+#define LAB 31
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -50,11 +52,27 @@ uint8_t num=0;
 #elif LAB == 22
 #elif LAB == 23
 uint32_t ledState ;
+
 #elif LAB == 24
 uint32_t ledTemp;
 uint32_t initLed = 1;
 uint16_t bitNum[8];
 uint16_t shift = 0;
+
+#elif LAB == 33
+char input;
+char display[] = "Input =>";
+char newLine[] ="\r\n";
+char quit[] = "QUIT";
+#elif LAB == 34
+char description[]="Display Blinking LED PRESS (r, g) \r\nDisplay Group Members PRESS m \r\nQuit PRESS q\r\n";
+char question[]="\tInput =>";
+char answer;
+char quit[] = "QUIT";
+char unknown[] = "Unknown Command \r\n";
+char member[]="61010707 \r\nPasawee Laearun \r\n";
+int isDisplay=0;
+char newLine[] ="\r\n";
 #endif
 
 /* USER CODE END PV */
@@ -99,11 +117,17 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+	#if LAB == 24
   GPIOG->ODR = 0xFFFFFFFF;
 	GPIOF->ODR = 0xFFFFFFFF;
 	GPIOE->ODR = 0xFFFFFFFF;
-  /* USER CODE END 2 */
+	#elif LAB == 34
+	HAL_GPIO_WritePin(GPIOG,GPIO_PIN_9,GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOG,GPIO_PIN_14,GPIO_PIN_SET);
+  #endif
+	/* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -161,8 +185,73 @@ int main(void)
 	        GPIOE->ODR = 0xFFFFFFFF;
 			}
 			
+		#elif LAB == 31
+		char str[] = "Hello, World!!\n\r";
+    
+    HAL_UART_Transmit(&huart3, (uint8_t*) str, strlen(str),1000);
+    HAL_Delay(500);
+		
 					
+		#elif LAB == 32
+		char ch1='A';
+    while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_TC)==RESET){}
+    HAL_UART_Transmit(&huart3, (uint8_t*)&ch1,1,1000);
+    HAL_Delay(500);
+		
+		
+		#elif LAB == 33
+		
+    while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_TC)==RESET){}
+    HAL_UART_Transmit(&huart3, (uint8_t*) display, strlen(display),1000);
+		
+		while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_RXNE)==RESET){}
+		HAL_UART_Receive(&huart3, (uint8_t*)&input, 1,1000);
+		HAL_UART_Transmit(&huart3, (uint8_t*)&input, 1,1000);
+		HAL_UART_Transmit(&huart3, (uint8_t*)newLine, strlen(newLine),1000);
+		
+		if(input=='q'){
+			HAL_UART_Transmit(&huart3, (uint8_t*)quit, strlen(quit),1000);
+			while(1){}
+		}
+    HAL_Delay(500);
+		#elif LAB == 34
+		
+		while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_TC)==RESET){}
+		if(!isDisplay)
+		{
+			HAL_UART_Transmit(&huart3, (uint8_t*) description, strlen(description),1000);
+			isDisplay++;
+		}
+		HAL_UART_Transmit(&huart3, (uint8_t*) question, strlen(question),1000);
 			
+		while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_RXNE)==RESET){}
+		HAL_UART_Receive(&huart3, (uint8_t*)&answer, 1,1000);
+		HAL_UART_Transmit(&huart3, (uint8_t*)&answer, 1,1000);
+		HAL_UART_Transmit(&huart3, (uint8_t*)newLine, strlen(newLine),1000);
+		
+		
+		if(answer=='q'){
+			HAL_UART_Transmit(&huart3, (uint8_t*)quit, strlen(quit),1000);
+			while(1){}
+		}else if(answer =='r'){
+			for(int i = 0;i<6;i++){
+					GPIOG->ODR ^= GPIO_PIN_9;
+					HAL_Delay(300);
+			} 
+			HAL_GPIO_WritePin(GPIOG,GPIO_PIN_9,GPIO_PIN_SET);
+		}else if(answer =='g'){
+			for(int i = 0;i<6;i++){
+					GPIOG->ODR ^= GPIO_PIN_14;
+					HAL_Delay(300);
+			} 
+			HAL_GPIO_WritePin(GPIOG,GPIO_PIN_14,GPIO_PIN_SET);
+		}else if(answer =='m'){
+			HAL_UART_Transmit(&huart3, (uint8_t*)member, strlen(member),1000);
+			
+		}else{
+			HAL_UART_Transmit(&huart3, (uint8_t*)unknown, strlen(unknown),1000);
+		}
+		
 		#endif
 		
 		
@@ -178,6 +267,7 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage 
   */
@@ -214,6 +304,12 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3;
+  PeriphClkInitStruct.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
