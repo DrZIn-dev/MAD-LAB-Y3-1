@@ -36,7 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define LAB 31
+#define LAB 41
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -73,6 +73,8 @@ char unknown[] = "Unknown Command \r\n";
 char member[]="61010707 \r\nPasawee Laearun \r\n";
 int isDisplay=0;
 char newLine[] ="\r\n";
+
+#elif LAB == 41
 #endif
 
 /* USER CODE END PV */
@@ -126,8 +128,9 @@ int main(void)
 	#elif LAB == 34
 	HAL_GPIO_WritePin(GPIOG,GPIO_PIN_9,GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOG,GPIO_PIN_14,GPIO_PIN_SET);
+	#elif LAB == 41
   #endif
-	/* USER CODE END 2 */
+  /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -252,6 +255,10 @@ int main(void)
 			HAL_UART_Transmit(&huart3, (uint8_t*)unknown, strlen(unknown),1000);
 		}
 		
+		#elif LAB == 41
+		
+		HAL_UART_Transmit(&huart3,(uint8_t *)".",1,100);
+		HAL_Delay(400);
 		#endif
 		
 		
@@ -324,6 +331,28 @@ void bitConvert(uint32_t ledTemp){
 		GPIOG->ODR = ~(bitNum[7] <<9 | bitNum[6] << 14);
 		GPIOF->ODR =~(bitNum[5] <<15 | bitNum[3] <<14 | bitNum[0] <<13);
 		GPIOE->ODR = ~(bitNum[4]<<13 | bitNum[2] << 11 | bitNum[1] <<9); 
+}
+
+#elif LAB == 41
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if(GPIO_Pin == GPIO_PIN_13){
+		HAL_UART_Transmit(&huart3,(uint8_t *)"---",3,100);
+		HAL_Delay(200);
+		for(int i = 0 ; i<20;i++){
+			HAL_UART_Transmit(&huart3,(uint8_t *)"B",1,100);
+			HAL_Delay(200);
+		}
+	}
+	
+	if(GPIO_Pin == GPIO_PIN_0){
+		HAL_UART_Transmit(&huart3,(uint8_t *)"---",3,100);
+		HAL_Delay(200);
+		for(int i = 0 ; i<20;i++){
+			HAL_UART_Transmit(&huart3,(uint8_t *)"E",1,100);
+			HAL_Delay(200);
+		}
+	}
 }
 #endif
 /* USER CODE END 4 */
