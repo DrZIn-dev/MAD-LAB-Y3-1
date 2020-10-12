@@ -20,12 +20,14 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
+#include "dma.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stdio.h"
 #include "string.h"
 /* USER CODE END Includes */
 
@@ -36,7 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define LAB 41
+#define LAB 55
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -75,6 +77,16 @@ int isDisplay=0;
 char newLine[] ="\r\n";
 
 #elif LAB == 41
+#elif LAB ==01
+	uint8_t n;
+#elif LAB ==02
+char display[] = "07P";
+#elif LAB == 54
+volatile uint32_t adc_val = 0;
+#elif LAB == 55
+uint32_t adc_val[8000];
+char newLine[] ="\r\n";
+//char display[] = "07P";
 #endif
 
 /* USER CODE END PV */
@@ -83,6 +95,20 @@ char newLine[] ="\r\n";
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void bitConvert(uint32_t);
+void displayHEX(uint32_t);
+void LedControl(GPIO_PinState LED3,GPIO_PinState LED2,GPIO_PinState LED1,GPIO_PinState LED0);
+#if LAB ==55
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *AdcHandle)
+ {
+ HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_RESET );
+ }
+
+void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *AdcHandle)
+ {
+ HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_SET);
+ }
+#endif
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -120,21 +146,30 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART3_UART_Init();
+	MX_DMA_Init();
+  MX_ADC1_Init();
+  
   /* USER CODE BEGIN 2 */
 	#if LAB == 24
   GPIOG->ODR = 0xFFFFFFFF;
 	GPIOF->ODR = 0xFFFFFFFF;
 	GPIOE->ODR = 0xFFFFFFFF;
-	#elif LAB == 34
+	#endif	
+	#if LAB == 34
 	HAL_GPIO_WritePin(GPIOG,GPIO_PIN_9,GPIO_PIN_SET);
 	HAL_GPIO_WritePin(GPIOG,GPIO_PIN_14,GPIO_PIN_SET);
-	#elif LAB == 41
-  #endif
+	#endif	
+	#if LAB == 54
+	HAL_ADC_Start(&hadc1);
+	#endif	
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
+	#if LAB ==55
+	 HAL_ADC_Start_DMA(&hadc1,adc_val,8000);
+	#endif 
+ while (1)
   {
     /* USER CODE END WHILE */
 
@@ -148,13 +183,15 @@ int main(void)
 			num = 0;
 		GPIOB->ODR ^= GPIO_PIN_0;
 		HAL_Delay(500);
-		#elif LAB == 22
+		#endif
+		#if LAB == 22
 		if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==GPIO_PIN_RESET){
 			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET);
 			HAL_Delay(1000);
 		  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_RESET);
 		}
-		#elif LAB == 23
+		#endif
+		#if LAB == 23
 		if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==GPIO_PIN_RESET){
 			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET);
 			ledState = ((GPIOB->ODR))&0x01;
@@ -162,7 +199,8 @@ int main(void)
 		  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_RESET);
 			ledState = ((GPIOB->ODR))&0x01;
 		}
-		#elif LAB == 24
+		#endif
+		#if LAB == 24
 			if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)==GPIO_PIN_RESET){
 				ledTemp = initLed << shift;
 
@@ -187,22 +225,22 @@ int main(void)
 	        GPIOF->ODR = 0xFFFFFFFF;
 	        GPIOE->ODR = 0xFFFFFFFF;
 			}
-			
-		#elif LAB == 31
+		#endif
+		#if LAB == 31
 		char str[] = "Hello, World!!\n\r";
     
     HAL_UART_Transmit(&huart3, (uint8_t*) str, strlen(str),1000);
     HAL_Delay(500);
 		
-					
-		#elif LAB == 32
+		#endif	
+		#if LAB == 32
 		char ch1='A';
     while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_TC)==RESET){}
     HAL_UART_Transmit(&huart3, (uint8_t*)&ch1,1,1000);
     HAL_Delay(500);
 		
-		
-		#elif LAB == 33
+		#endif	
+		#if LAB == 33
 		
     while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_TC)==RESET){}
     HAL_UART_Transmit(&huart3, (uint8_t*) display, strlen(display),1000);
@@ -217,7 +255,8 @@ int main(void)
 			while(1){}
 		}
     HAL_Delay(500);
-		#elif LAB == 34
+		#endif	
+		#if LAB == 34
 		
 		while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_TC)==RESET){}
 		if(!isDisplay)
@@ -254,13 +293,55 @@ int main(void)
 		}else{
 			HAL_UART_Transmit(&huart3, (uint8_t*)unknown, strlen(unknown),1000);
 		}
-		
-		#elif LAB == 41
+		#endif	
+		#if LAB == 41
 		
 		HAL_UART_Transmit(&huart3,(uint8_t *)".",1,100);
 		HAL_Delay(400);
-		#endif
+		#endif	
+		#if LAB == 01
+			for(n = 0;n<=2;n++){
+					GPIOC ->BSRR = 0x07000000;
+					HAL_Delay(50);
+					
+					GPIOC ->BSRR = 0x00000400 >> n;
+					HAL_Delay(50);
+					
+			} 
+		#endif	
+		#if LAB == 02
+	 	while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_TC)==RESET){}
+    HAL_UART_Transmit(&huart3, (uint8_t*) display, strlen(display),1000);
 		
+		
+		while(__HAL_UART_GET_FLAG(&huart4,UART_FLAG_TC)==RESET){}
+		//GPIOB->ODR ^= GPIO_PIN_0;
+    HAL_UART_Transmit(&huart4, (uint8_t*) display, strlen(display),1000);
+		HAL_Delay(500);
+		#endif	
+		#if LAB == 54
+		uint32_t display = 501;
+		while(HAL_ADC_PollForConversion(&hadc1 ,100) != HAL_OK){}
+		adc_val = HAL_ADC_GetValue(&hadc1);
+		displayHEX(adc_val);
+		HAL_Delay(400);
+		#endif	
+		#if LAB == 55
+
+		char display[800];
+
+		for(int i = 0 ; i < 8 ;i ++){
+			sprintf(display, "0x%08x ", adc_val[i]);	
+			while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_TC)==RESET){}
+			HAL_UART_Transmit(&huart3, (uint8_t*) display, strlen(display),1000);
+		}
+		
+		while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_TC)==RESET){}
+		HAL_UART_Transmit(&huart3, (uint8_t*) newLine, strlen(newLine),1000);
+		#endif	
+		
+		
+
 		
   }
   /* USER CODE END 3 */
@@ -279,7 +360,7 @@ void SystemClock_Config(void)
   /** Configure the main internal regulator output voltage 
   */
   __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
   /** Initializes the CPU, AHB and APB busses clocks 
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
@@ -288,16 +369,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 216;
+  RCC_OscInitStruct.PLL.PLLN = 96;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Activate the Over-Drive mode 
-  */
-  if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     Error_Handler();
   }
@@ -306,11 +381,11 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV8;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -354,6 +429,46 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		}
 	}
 }
+#elif LAB == 54
+void displayHEX(uint32_t input){
+		char display[80];
+		sprintf(display, "ADC_CH10 0x%08x Vin = %f v raw value = %d \r\n ", input, (input * 3.3)/4095, input);	
+		
+		while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_TC)==RESET){}
+    HAL_UART_Transmit(&huart3, (uint8_t*) display, strlen(display),1000);
+		
+		if(input > 0 && input < 819){
+		 // LEVEL 1
+			LedControl(GPIO_PIN_SET,GPIO_PIN_SET,GPIO_PIN_SET,GPIO_PIN_SET);
+		}
+		else if(input > 819 && input < 1638){
+		 // LEVEL 2
+			LedControl(GPIO_PIN_SET,GPIO_PIN_SET,GPIO_PIN_SET,GPIO_PIN_RESET);
+		}	else if(input > 1638 && input < 2457){
+		 // LEVEL 2
+			LedControl(GPIO_PIN_SET,GPIO_PIN_SET,GPIO_PIN_RESET,GPIO_PIN_RESET);
+		}
+		else if(input > 2457 && input < 3276){
+		 // LEVEL 2
+			LedControl(GPIO_PIN_SET,GPIO_PIN_RESET,GPIO_PIN_RESET,GPIO_PIN_RESET);
+		}
+		else if(input > 3276 && input < 4095){
+		 // LEVEL 2
+			LedControl(GPIO_PIN_RESET,GPIO_PIN_RESET,GPIO_PIN_RESET,GPIO_PIN_RESET);
+		}
+		else{
+		}
+}
+
+void LedControl(GPIO_PinState LED3,GPIO_PinState LED2,GPIO_PinState LED1,GPIO_PinState LED0){
+			HAL_GPIO_WritePin(GPIOF,GPIO_PIN_13,LED0);
+			HAL_GPIO_WritePin(GPIOE,GPIO_PIN_9,LED1);
+			HAL_GPIO_WritePin(GPIOE,GPIO_PIN_11,LED2);
+			HAL_GPIO_WritePin(GPIOF,GPIO_PIN_14,LED3);
+}
+#elif LAB == 55
+
+
 #endif
 /* USER CODE END 4 */
 
