@@ -129,9 +129,9 @@ int main(void)
 			if(dutyB > 1 ) dutyB = 0;
 		}
 		
-		htim2.Instance -> CCR1 = (10000-1) * dutyR;
-		htim2.Instance -> CCR2 = (10000-1) * dutyG;
-		htim2.Instance -> CCR3 = (10000-1) * dutyB;
+		htim2.Instance -> CCR1 = (1000-1) * dutyR;
+		htim2.Instance -> CCR2 = (1000-1) * dutyG;
+		htim2.Instance -> CCR3 = (1000-1) * dutyB;
 		
 		sprintf(display, "input => %c    duty R : %.1f | G : %.1f | B : %.1f \r\n",ch1, dutyR , dutyG, dutyB );	
 		while(__HAL_UART_GET_FLAG(&huart3,UART_FLAG_TC)==RESET){}
