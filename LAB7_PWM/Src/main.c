@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -96,6 +97,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART3_UART_Init();
   MX_TIM2_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 	
 	htim2.Instance -> CCR1 = (10000-1) * dutyR;

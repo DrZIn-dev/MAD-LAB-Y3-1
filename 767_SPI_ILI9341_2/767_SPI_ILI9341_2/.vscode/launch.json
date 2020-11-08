@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "showDevDebugOutput": true,
+            "cwd": "${workspaceRoot}",
+            "executable": "./build/767_SPI_ILI9341_2.elf",
+            "name": "Debug STM32",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "preLaunchTask": "Build STM",
+            "device": "stlink",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f7x.cfg"
+            ]
+        }
+    ]
+}
